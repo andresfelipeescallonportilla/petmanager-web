@@ -1,0 +1,309 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pet Manager</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+
+<body>
+
+    <!-- ================= ENCABEZADO ================= -->
+    <header class="app-header">
+        <div class="brand">
+            <span class="brand-icon">🐾</span>
+            <h1>Pet Manager</h1>
+            <span class="brand-badge">Web · Flask + MySQL</span>
+        </div>
+        <div class="header-actions">
+            <button type="button" class="btn btn-ghost" id="btnTestConnection">
+                <span class="ico">🔌</span> Test connection
+            </button>
+            <button type="button" class="btn btn-ghost" id="btnExportPetList">
+                <span class="ico">📊</span> Export Pet List
+            </button>
+            <button type="button" class="btn btn-ghost" id="btnExportDogList">
+                <span class="ico">📊</span> Export Dog List
+            </button>
+            <button type="button" class="btn btn-ghost" id="btnExportCatList">
+                <span class="ico">📊</span> Export Cat List
+            </button>
+            <button type="button" class="btn btn-ghost" id="btnRestart">
+                <span class="ico">🔄</span> Restart
+            </button>
+        </div>
+    </header>
+
+    <!-- ================= PESTAÑAS ================= -->
+    <main class="workspace">
+        <nav class="tab-bar" role="tablist">
+            <button class="tab active" role="tab" data-tab="pet-list">Pet List</button>
+            <button class="tab" role="tab" data-tab="dog-manager">Dog Manager</button>
+            <button class="tab" role="tab" data-tab="cat-manager">Cat Manager</button>
+            <button class="tab" role="tab" data-tab="dog-list">Dog List</button>
+            <button class="tab" role="tab" data-tab="cat-list">Cat List</button>
+            <button class="tab" role="tab" data-tab="report-pets">Report By Health Status</button>
+            <button class="tab" role="tab" data-tab="report-dogs">Dog Report</button>
+            <button class="tab" role="tab" data-tab="report-cats">Cat Report</button>
+        </nav>
+
+        <!-- ---------- Pet List ---------- -->
+        <section class="tab-panel active" id="panel-pet-list" role="tabpanel">
+            <div class="panel-header">
+                <h2>All pets</h2>
+                <span class="hint" id="petListCount">0 registros</span>
+            </div>
+            <div class="table-wrap">
+                <table class="data-table" id="tblPets">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Type</th>
+                            <th>Born year</th>
+                            <th>Color</th>
+                            <th>Health Status</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ---------- Dog Manager ---------- -->
+        <section class="tab-panel" id="panel-dog-manager" role="tabpanel">
+            <div class="panel-header">
+                <h2>Dog Manager</h2>
+                <span class="hint">Complete el formulario y use Save, Search, Edit o Delete</span>
+            </div>
+
+            <div class="form-card">
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="dogCode">Code</label>
+                        <input type="text" id="dogCode" placeholder="001" maxlength="20" autocomplete="off">
+                    </div>
+                    <div class="field">
+                        <label for="dogName">Name</label>
+                        <input type="text" id="dogName" placeholder="Firulais" maxlength="50" autocomplete="off">
+                    </div>
+                    <div class="field">
+                        <label for="dogBornYear">Born year</label>
+                        <input type="number" id="dogBornYear" placeholder="2018" min="1900" max="2100">
+                    </div>
+                    <div class="field">
+                        <label for="dogColor">Color</label>
+                        <input type="text" id="dogColor" placeholder="gris" maxlength="20" autocomplete="off">
+                    </div>
+                    <div class="field">
+                        <label for="dogHealthStatus">Health Status</label>
+                        <select id="dogHealthStatus">
+                            <option>Sick</option>
+                            <option>Healthy</option>
+                            <option>In Surgery</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="dogBreed">Breed</label>
+                        <select id="dogBreed">
+                            <option>Criollo</option>
+                            <option>Schnauzer</option>
+                            <option>German shepherd</option>
+                            <option>Pincher</option>
+                        </select>
+                    </div>
+                    <div class="field field-check">
+                        <label for="dogPedigree">Pedigree</label>
+                        <label class="switch">
+                            <input type="checkbox" id="dogPedigree">
+                            <span class="slider"></span>
+                        </label>
+                    </div>
+                    <div class="field">
+                        <label for="dogPetId">petId</label>
+                        <input type="number" id="dogPetId" readonly placeholder="(buscar primero)">
+                    </div>
+                    <div class="field">
+                        <label for="dogId">dogId</label>
+                        <input type="number" id="dogId" readonly placeholder="(buscar primero)">
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-primary" id="btnDogSave">Save</button>
+                    <button type="button" class="btn btn-secondary" id="btnDogSearch">Search</button>
+                    <button type="button" class="btn btn-warning" id="btnDogEdit">Edit</button>
+                    <button type="button" class="btn btn-danger" id="btnDogDelete">Delete</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ---------- Cat Manager ---------- -->
+        <section class="tab-panel" id="panel-cat-manager" role="tabpanel">
+            <div class="panel-header">
+                <h2>Cat Manager</h2>
+                <span class="hint">Complete el formulario y use Save, Search, Edit o Delete</span>
+            </div>
+
+            <div class="form-card">
+                <div class="form-grid">
+                    <div class="field">
+                        <label for="catCode">Code</label>
+                        <input type="text" id="catCode" placeholder="003" maxlength="20" autocomplete="off">
+                    </div>
+                    <div class="field">
+                        <label for="catName">Name</label>
+                        <input type="text" id="catName" placeholder="Michi" maxlength="50" autocomplete="off">
+                    </div>
+                    <div class="field">
+                        <label for="catBornYear">Born year</label>
+                        <input type="number" id="catBornYear" placeholder="2020" min="1900" max="2100">
+                    </div>
+                    <div class="field">
+                        <label for="catColor">Color</label>
+                        <input type="text" id="catColor" placeholder="Negro" maxlength="20" autocomplete="off">
+                    </div>
+                    <div class="field">
+                        <label for="catHealthStatus">Health Status</label>
+                        <select id="catHealthStatus">
+                            <option>Sick</option>
+                            <option>Healthy</option>
+                            <option>In Surgery</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="catBreed">Breed</label>
+                        <select id="catBreed">
+                            <option>Birman</option>
+                            <option>British</option>
+                            <option>Bombay</option>
+                            <option>Abyssinian</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label for="catPetId">petId</label>
+                        <input type="number" id="catPetId" readonly placeholder="(buscar primero)">
+                    </div>
+                    <div class="field">
+                        <label for="catId">catId</label>
+                        <input type="number" id="catId" readonly placeholder="(buscar primero)">
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-primary" id="btnCatSave">Save</button>
+                    <button type="button" class="btn btn-secondary" id="btnCatSearch">Search</button>
+                    <button type="button" class="btn btn-warning" id="btnCatEdit">Edit</button>
+                    <button type="button" class="btn btn-danger" id="btnCatDelete">Delete</button>
+                </div>
+            </div>
+        </section>
+
+        <!-- ---------- Dog List ---------- -->
+        <section class="tab-panel" id="panel-dog-list" role="tabpanel">
+            <div class="panel-header">
+                <h2>Dog List</h2>
+                <span class="hint" id="dogListCount">0 registros</span>
+            </div>
+            <div class="table-wrap">
+                <table class="data-table" id="tblDogs">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Breed</th>
+                            <th>Pedigree</th>
+                            <th>Born year</th>
+                            <th>Color</th>
+                            <th>Health Status</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ---------- Cat List ---------- -->
+        <section class="tab-panel" id="panel-cat-list" role="tabpanel">
+            <div class="panel-header">
+                <h2>Cat List</h2>
+                <span class="hint" id="catListCount">0 registros</span>
+            </div>
+            <div class="table-wrap">
+                <table class="data-table" id="tblCats">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Breed</th>
+                            <th>Born year</th>
+                            <th>Color</th>
+                            <th>Health Status</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </section>
+
+        <!-- ---------- Report By Health Status ---------- -->
+        <section class="tab-panel" id="panel-report-pets" role="tabpanel">
+            <div class="panel-header">
+                <h2>Pets Classification By health status</h2>
+                <button type="button" class="btn btn-secondary" id="btnRefreshReports">Refresh Reports</button>
+            </div>
+            <div class="chart-card">
+                <div class="chart-area" id="chartPets"></div>
+                <div class="chart-legend" id="legendPets"></div>
+            </div>
+        </section>
+
+        <!-- ---------- Dog Report ---------- -->
+        <section class="tab-panel" id="panel-report-dogs" role="tabpanel">
+            <div class="panel-header">
+                <h2>Dogs Classification By health status</h2>
+            </div>
+            <div class="chart-card">
+                <div class="chart-area" id="chartDogs"></div>
+            </div>
+        </section>
+
+        <!-- ---------- Cat Report ---------- -->
+        <section class="tab-panel" id="panel-report-cats" role="tabpanel">
+            <div class="panel-header">
+                <h2>Cats Classification By health status</h2>
+            </div>
+            <div class="chart-card">
+                <div class="chart-area" id="chartCats"></div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ================= BARRA DE ESTADO ================= -->
+    <footer class="status-bar">
+        <span class="dot" id="statusDot"></span>
+        <span id="statusText">Iniciando…</span>
+    </footer>
+
+    <!-- ================= DIÁLOGO (equivalente a JOptionPane) ================= -->
+    <div class="modal-backdrop" id="modalBackdrop" hidden>
+        <div class="modal" role="dialog" aria-modal="true">
+            <div class="modal-icon" id="modalIcon">ℹ️</div>
+            <div class="modal-body">
+                <h3 id="modalTitle">Pet Manager</h3>
+                <p id="modalMessage"></p>
+            </div>
+            <div class="modal-actions">
+                <button type="button" class="btn btn-primary" id="modalOk">Aceptar</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/js/api.js"></script>
+    <script src="/static/js/charts.js"></script>
+    <script src="/static/js/app.js"></script>
+</body>
+
+</html>
