@@ -19,6 +19,8 @@ def create_app() -> Flask:
     def add_security_headers(response):
         response.headers.setdefault("X-Content-Type-Options", "nosniff")
         response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+        response.headers.setdefault("X-Frame-Options", "SAMEORIGIN")
+        response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
         if os.getenv("VERCEL") == "1":
             response.headers.setdefault("Strict-Transport-Security", "max-age=63072000")
         return response
@@ -38,11 +40,13 @@ def create_app() -> Flask:
     @app.get("/api")
     def api_info():
         ok, message = test_connection(ctl.db_data)
+        if not ok:
+            app.logger.warning("La comprobación de PostgreSQL falló: %s", message)
         return jsonify({
-            "ok": True,
+            "ok": ok,
             "app": "Pet Manager (web)",
             "database": ok,
-            "database_message": message,
+            "database_message": "Conectada" if ok else "No disponible",
             "endpoints": [
                 "GET    /api/health",
                 "GET    /api/pets?type=Dog|Cat",

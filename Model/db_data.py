@@ -1,4 +1,5 @@
 import os
+from urllib.parse import parse_qsl, urlencode, urlsplit, urlunsplit
 
 
 class DbData:
@@ -11,18 +12,27 @@ class DbData:
             or os.getenv("DATABASE_URL")
             or os.getenv("SUPABASE_DB_URL")
         )
+    def connect(self):
+        import psycopg2
+
         if not self.url:
             raise RuntimeError(
                 "Falta la variable de entorno con la URL de PostgreSQL "
                 "(POSTGRES_URL / DATABASE_URL / SUPABASE_DB_URL)."
             )
 
-    def connect(self):
-        import psycopg2
-
         try:
+            parsed = urlsplit(self.url)
+            query = urlencode([
+                (key, value)
+                for key, value in parse_qsl(parsed.query, keep_blank_values=True)
+                if key not in {"supa", "pgbouncer"}
+            ])
+            connection_url = urlunsplit(
+                (parsed.scheme, parsed.netloc, parsed.path, query, parsed.fragment)
+            )
             return psycopg2.connect(
-                self.url,
+                connection_url,
                 sslmode="require",
                 connect_timeout=10,
             )

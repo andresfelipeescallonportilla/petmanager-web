@@ -21,6 +21,11 @@ def _body() -> dict:
     return data if isinstance(data, dict) else {}
 
 
+def _database_error(context: str, detail: str):
+    logger.error("%s: %s", context, detail)
+    return jsonify({"ok": False, "error": "No se pudo completar la operación. Inténtalo de nuevo."}), 500
+
+
 def _animal_type() -> str:
     data = _body()
     value = (
@@ -114,7 +119,12 @@ def _build_pet(data: dict):
 @api.get("/health")
 def health():
     ok, message = test_connection(ctl.db_data)
-    return jsonify({"ok": ok, "message": message}), (200 if ok else 503)
+    if not ok:
+        logger.warning("La comprobación de PostgreSQL falló: %s", message)
+    return jsonify({
+        "ok": ok,
+        "message": "Conexión a PostgreSQL correcta" if ok else "No se pudo conectar a PostgreSQL",
+    }), (200 if ok else 503)
 
 
 @api.get("/pets")
@@ -126,7 +136,7 @@ def list_pets():
     pets = ctl.ListPet(animal_type)
     error = ctl.getLastError(animal_type)
     if error:
-        return jsonify({"ok": False, "error": error}), 500
+        return _database_error("Error en una operación de mascotas", error)
     return jsonify({"ok": True, "data": [_serialize(pet) for pet in pets]})
 
 
@@ -140,7 +150,7 @@ def search_pet():
     pet = ctl.SearchPet(code, animal_type)
     error = ctl.getLastError(animal_type)
     if error:
-        return jsonify({"ok": False, "error": error}), 500
+        return _database_error("Error en una operación de mascotas", error)
     return jsonify({"ok": True, "data": _serialize(pet) if pet else None})
 
 
@@ -154,7 +164,7 @@ def create_pet():
         return jsonify({"ok": False, "error": "Fill all fields (Code, Name y Color)"}), 400
     if ctl.CreatePet(pet):
         return jsonify({"ok": True, "message": "The record has been saved"}), 201
-    return jsonify({"ok": False, "error": ctl.getLastError(pet.getAnimalType()) or "An error has occurred during the creation."}), 500
+    return _database_error("No se pudo crear la mascota", ctl.getLastError(pet.getAnimalType()))
 
 
 @api.put("/pets")
@@ -167,7 +177,7 @@ def update_pet():
         return jsonify({"ok": False, "error": "You have to search the record to update"}), 400
     if ctl.EditPet(pet):
         return jsonify({"ok": True, "message": "Record updated"})
-    return jsonify({"ok": False, "error": ctl.getLastError(pet.getAnimalType()) or "Error updating the record"}), 500
+    return _database_error("No se pudo actualizar la mascota", ctl.getLastError(pet.getAnimalType()))
 
 
 @api.delete("/pets")
@@ -184,7 +194,7 @@ def delete_pet():
     pet = clsDog.fromIds(pet_id, detail_id) if animal_type == DOG else clsCat.fromIds(pet_id, detail_id)
     if ctl.DeletePet(pet):
         return jsonify({"ok": True, "message": "The pet has been deleted (removed) successfuly!"})
-    return jsonify({"ok": False, "error": ctl.getLastError(animal_type) or "An error has occurred during the deletion."}), 500
+    return _database_error("No se pudo eliminar la mascota", ctl.getLastError(animal_type))
 
 
 @api.get("/reports")
@@ -200,7 +210,7 @@ def reports():
         return jsonify({"ok": False, "error": "El tipo de reporte debe ser pets, dogs o cats"}), 400
     error = ctl.getLastError(DOG if kind in {"pets", "dogs"} else CAT)
     if error:
-        return jsonify({"ok": False, "error": error}), 500
+        return _database_error("Error en una operación de mascotas", error)
     return jsonify({"ok": True, "data": [
         {"health_status": row.health_status, "amount": row.amount_of_pets_by_health_status}
         for row in records
@@ -215,25 +225,25 @@ def export():
             dogs = ctl.ListPet(DOG)
             error = ctl.getLastError(DOG)
             if error:
-                return jsonify({"ok": False, "error": error}), 500
+                return _database_error("Error en una operación de mascotas", error)
             output = export_dog_list(dogs)
             filename = "dog_list.xlsx"
         elif kind == "cats":
             cats = ctl.ListPet(CAT)
             error = ctl.getLastError(CAT)
             if error:
-                return jsonify({"ok": False, "error": error}), 500
+                return _database_error("Error en una operación de mascotas", error)
             output = export_cat_list(cats)
             filename = "cat_list.xlsx"
         elif kind == "pets":
             dogs = ctl.ListPet(DOG)
             error = ctl.getLastError(DOG)
             if error:
-                return jsonify({"ok": False, "error": error}), 500
+                return _database_error("Error en una operación de mascotas", error)
             cats = ctl.ListPet(CAT)
             error = ctl.getLastError(CAT)
             if error:
-                return jsonify({"ok": False, "error": error}), 500
+                return _database_error("Error en una operación de mascotas", error)
             output = export_pet_list(dogs, cats)
             filename = "pet_list.xlsx"
         else:
@@ -246,4 +256,4 @@ def export():
         )
     except Exception as exc:
         logger.exception("Error al exportar el reporte")
-        return jsonify({"ok": False, "error": str(exc)}), 500
+        return jsonify({"ok": False, "error": "No se pudo generar el archivo Excel."}), 500

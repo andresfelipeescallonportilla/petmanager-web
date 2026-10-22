@@ -1,3 +1,13 @@
+import os
+from pathlib import Path
+
+from dotenv import load_dotenv
+
+PROJECT_ROOT = Path(__file__).resolve().parent
+if not os.getenv("VERCEL"):
+    for env_file in (".env.development.local", ".env.local", ".env"):
+        load_dotenv(PROJECT_ROOT / env_file, override=False)
+
 from backend.app import create_app
 
 app = create_app()

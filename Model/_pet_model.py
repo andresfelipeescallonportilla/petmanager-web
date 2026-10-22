@@ -162,9 +162,11 @@ class PetModel(ABC):
                     try:
                         if detail_id:
                             cursor.execute(
-                                f"DELETE FROM public.{self.detail_table} WHERE {detail_key} = %s",
-                                (detail_id,),
+                                f"DELETE FROM public.{self.detail_table} WHERE {detail_key} = %s AND id_pet = %s",
+                                (detail_id, pet.petId),
                             )
+                            if cursor.rowcount == 0:
+                                raise LookupError(f"No se encontró el registro de {self.animal_type.lower()}")
                         else:
                             cursor.execute(
                                 f"DELETE FROM public.{self.detail_table} WHERE id_pet = %s",
