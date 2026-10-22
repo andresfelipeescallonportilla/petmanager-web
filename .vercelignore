@@ -1,0 +1,13 @@
+.venv
+venv
+__pycache__
+*.pyc
+.env
+.env.*
+reportes
+*.xlsx
+.DS_Store
+.vscode
+.idea
+node_modules
+.next
